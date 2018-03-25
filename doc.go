@@ -27,6 +27,7 @@ Short example:
 
 	c := new(myConfig)
 
+	flag.Usage = config.FlagUsage(c)
 	flag.Var(config.FileReader(c), "f", "read config from YAML files")
 	flag.Var(config.Assigner(c), "c", "set config keys (path.to.key=value)")
 	flag.Parse()
@@ -74,6 +75,7 @@ Longer example:
 		dump := flag.Bool("dump", false, "create defaults.yaml")
 		flag.Var(config.FileReader(c), "f", "read config from YAML files")
 		flag.Var(config.Assigner(c), "c", "set config keys (path.to.key=value)")
+		flag.Usage = config.FlagUsage(c)
 		flag.Parse()
 
 		if *dump {
@@ -88,6 +90,24 @@ Longer example:
 			fmt.Printf("Sample rate is %d\n", c.Audio.SampleRate)
 		}
 	}
+
+Example usage output:
+
+	$ example -help
+	Usage of example:
+	  -c value
+	    	set config keys (path.to.key=value)
+	  -dump
+	    	create defaults.yaml
+	  -f value
+	    	read config from YAML files
+
+	Configuration settings:
+	  comment string
+	  size.width uint32
+	  size.height uint32
+	  audio.enabled bool
+	  audio.samplerate int
 
 */
 package config

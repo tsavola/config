@@ -66,7 +66,7 @@ func PrintSettings(config interface{}) {
 	}
 }
 
-func UsageFunc(config interface{}) func() {
+func FlagUsage(config interface{}) func() {
 	stdUsage := flag.Usage
 
 	return func() {
