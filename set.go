@@ -50,9 +50,8 @@ func SetFromString(target interface{}, path string, value string) (err error) {
 // doesn't exist or parsing fails.
 func MustSetFromString(target interface{}, path string, value string) {
 	node := lookup(target, path)
-	t := node.Type()
 
-	switch t.Kind() {
+	switch node.Kind() {
 	case reflect.Bool:
 		setBoolFromString(node, value)
 
@@ -69,7 +68,7 @@ func MustSetFromString(target interface{}, path string, value string) {
 		setIntFromString(node, value, 32)
 
 	case reflect.Int64:
-		if t == durationType {
+		if node.Type() == durationType {
 			d, err := time.ParseDuration(value)
 			if err != nil {
 				panic(err)
@@ -104,7 +103,7 @@ func MustSetFromString(target interface{}, path string, value string) {
 		node.SetString(value)
 
 	default:
-		panic(fmt.Errorf("unsupported field type: %s", t))
+		panic(fmt.Errorf("unsupported field type: %s", node.Type()))
 	}
 }
 
@@ -182,13 +181,18 @@ func lookup(config interface{}, path string) (node reflect.Value) {
 	node = reflect.ValueOf(config)
 
 	for _, nodeName := range strings.Split(path, ".") {
-		if node.Type().Kind() == reflect.Ptr {
-			node = reflect.Indirect(node)
+		if node.Kind() == reflect.Ptr {
+			node = node.Elem()
 		}
 
-		node = node.FieldByNameFunc(func(fieldName string) bool {
+		field, ok := node.Type().FieldByNameFunc(func(fieldName string) bool {
 			return strings.ToLower(fieldName) == nodeName
 		})
+		if !ok {
+			panic(fmt.Errorf("unknown config key: %q", path))
+		}
+
+		node = node.FieldByIndex(field.Index)
 	}
 
 	return

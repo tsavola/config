@@ -30,7 +30,7 @@ func Settings(config interface{}) (settings []Setting) {
 
 func enumerate(list []Setting, prefix string, node reflect.Value) []Setting {
 	if node.Type().Kind() == reflect.Ptr {
-		node = reflect.Indirect(node)
+		node = node.Elem()
 	}
 
 	for i := 0; i < node.Type().NumField(); i++ {
@@ -44,15 +44,14 @@ func enumerate(list []Setting, prefix string, node reflect.Value) []Setting {
 			path += strings.ToLower(field.Name)
 		}
 
-		t := field.Type
-		kind := t.Kind()
+		kind := field.Type.Kind()
 
 		if kind == reflect.Ptr {
 			list = enumerate(list, path, node.Field(i))
 		} else {
 			switch kind {
 			case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64, reflect.String:
-				list = append(list, Setting{path, t})
+				list = append(list, Setting{path, field.Type})
 
 			case reflect.Struct:
 				list = enumerate(list, path, node.Field(i))
