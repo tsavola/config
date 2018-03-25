@@ -16,40 +16,40 @@ import (
 var intBitSize = int(unsafe.Sizeof(int(0)) * 8)
 var durationType = reflect.TypeOf(time.Second)
 
-// Set a field of the object pointed to by target.  The value must have the
-// same type as the field.
-func Set(target interface{}, path string, value interface{}) (err error) {
+// Set a field of the configuration object.  The value must have the same type
+// as the field.
+func Set(config interface{}, path string, value interface{}) (err error) {
 	defer func() {
 		err = asError(recover())
 	}()
 
-	MustSet(target, path, value)
+	MustSet(config, path, value)
 	return
 }
 
-// MustSet a field of the object pointed to by target.  The value must have the
-// same type as the field.  Panic if the field doesn't exist or the types don't
+// MustSet a field of the configuration object.  The value must have the same
+// type as the field.  Panic if the field doesn't exist or the types don't
 // match.
-func MustSet(target interface{}, path string, value interface{}) {
-	lookup(target, path).Set(reflect.ValueOf(value))
+func MustSet(config interface{}, path string, value interface{}) {
+	lookup(config, path).Set(reflect.ValueOf(value))
 }
 
-// SetFromString sets a field of the object pointed to by target.  The value is
-// parsed according to the type of the field.
-func SetFromString(target interface{}, path string, value string) (err error) {
+// SetFromString sets a field of the configuration object.  The value is parsed
+// according to the type of the field.
+func SetFromString(config interface{}, path string, value string) (err error) {
 	defer func() {
 		err = asError(recover())
 	}()
 
-	MustSetFromString(target, path, value)
+	MustSetFromString(config, path, value)
 	return
 }
 
-// MustSetFromString sets a field of the object pointed to by target.  The
-// value is parsed according to the type of the field.  Panic if the field
-// doesn't exist or parsing fails.
-func MustSetFromString(target interface{}, path string, value string) {
-	node := lookup(target, path)
+// MustSetFromString sets a field of the configuration object.  The value is
+// parsed according to the type of the field.  Panic if the field doesn't exist
+// or parsing fails.
+func MustSetFromString(config interface{}, path string, value string) {
+	node := lookup(config, path)
 
 	switch node.Kind() {
 	case reflect.Bool:
@@ -144,36 +144,36 @@ func setFloatFromString(node reflect.Value, value string, bitSize int) {
 	node.SetFloat(f)
 }
 
-// Assign a value to a field of the object pointed to by target.  The field's
-// path and value are parsed from an expression of the form "path=value".
-func Assign(target interface{}, expr string) (err error) {
+// Assign a value to a field of the configuration object.  The field's path and
+// value are parsed from an expression of the form "path=value".
+func Assign(config interface{}, expr string) (err error) {
 	defer func() {
 		err = asError(recover())
 	}()
 
-	MustAssign(target, expr)
+	MustAssign(config, expr)
 	return
 }
 
-// Assign a value to a field of the object pointed to by target.  The field's
-// path and value are parsed from an expression of the form "path=value".
-// Panic if the field doesn't exist or parsing fails.
-func MustAssign(target interface{}, expr string) {
+// Assign a value to a field of the configuration object.  The field's path and
+// value are parsed from an expression of the form "path=value".  Panic if the
+// field doesn't exist or parsing fails.
+func MustAssign(config interface{}, expr string) {
 	tokens := strings.SplitN(expr, "=", 2)
 	if len(tokens) != 2 {
 		panic(fmt.Errorf("invalid assignment expression: %q", expr))
 	}
 
-	MustSetFromString(target, strings.TrimSpace(tokens[0]), strings.TrimSpace(tokens[1]))
+	MustSetFromString(config, strings.TrimSpace(tokens[0]), strings.TrimSpace(tokens[1]))
 }
 
-// Get the value of a field of an object.
-func Get(source interface{}, path string) (value interface{}, err error) {
+// Get the value of a field of the configuration object.
+func Get(config interface{}, path string) (value interface{}, err error) {
 	defer func() {
 		err = asError(recover())
 	}()
 
-	value = lookup(source, path).Interface()
+	value = lookup(config, path).Interface()
 	return
 }
 

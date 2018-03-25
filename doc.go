@@ -8,10 +8,11 @@ Package config is an ergonomic configuration parsing toolkit.  The schema is
 declared using a struct type, and values can be read from YAML files or set via
 command-line flags.
 
-A pointer to a preallocated object of a user-defined struct must be passed to
-the configuration functions.  The type can have an arbitrary number of nested
-structs.  Only exported fields can be used.  The object can be initialized with
-default values.
+A pointer to a preallocated configuration object of a user-defined struct type
+must be passed to all functions.  The type can have an arbitrary number of
+nested structs (either embedded or through an initialized pointer).  Only
+exported fields can be used.  The object can be initialized with default
+values.
 
 The field names are spelled in lower case in YAML files and on the
 command-line.  The accessor functions and flag values use dotted paths to
@@ -25,7 +26,7 @@ configuration values is through direct struct field access.
 
 Short example:
 
-	c := new(myConfig)
+	c := &myConfig{}
 
 	flag.Usage = config.FlagUsage(c)
 	flag.Var(config.FileReader(c), "f", "read config from YAML files")

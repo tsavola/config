@@ -8,9 +8,10 @@ import (
 	"flag"
 )
 
-// FileReader makes a flag.Value which reads configuration files.
-func FileReader(target interface{}) flag.Value {
-	return fileReader{target}
+// FileReader makes a ``dynamic value'' which reads files into the
+// configuration as its receives with filenames.
+func FileReader(config interface{}) flag.Value {
+	return fileReader{config}
 }
 
 type fileReader struct {
@@ -25,9 +26,10 @@ func (fileReader) String() string {
 	return ""
 }
 
-// Assigner makes a flag.Value which applies configuration expressions.
-func Assigner(target interface{}) flag.Value {
-	return assigner{target}
+// Assigner makes a ``dynamic value'' which sets fields in the configuration as
+// it receives assignment expressions.
+func Assigner(config interface{}) flag.Value {
+	return assigner{config}
 }
 
 type assigner struct {

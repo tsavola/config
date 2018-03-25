@@ -12,40 +12,40 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// Read YAML into the object pointed to by target.
-func Read(r io.Reader, target interface{}) error {
-	return yaml.NewDecoder(r).Decode(target)
+// Read YAML into the configuration.
+func Read(r io.Reader, config interface{}) error {
+	return yaml.NewDecoder(r).Decode(config)
 }
 
-// Read a YAML file into the object pointed to by target.
-func ReadFile(filename string, target interface{}) (err error) {
+// Read a YAML file into the configuration.
+func ReadFile(filename string, config interface{}) (err error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return
 	}
 	defer f.Close()
 
-	return Read(f, target)
+	return Read(f, config)
 }
 
-// Read a YAML file into the object pointed to by target.  No error is returned
-// if the file doesn't exist.
-func ReadFileIfExists(filename string, target interface{}) (err error) {
-	err = ReadFile(filename, target)
+// Read a YAML file into the configuration.  No error is returned if the file
+// doesn't exist.
+func ReadFileIfExists(filename string, config interface{}) (err error) {
+	err = ReadFile(filename, config)
 	if err != nil && os.IsNotExist(err) {
 		err = nil
 	}
 	return
 }
 
-// Write the user-defined object as YAML.
-func Write(w io.Writer, source interface{}) error {
-	return yaml.NewEncoder(w).Encode(source)
+// Write the configuration as YAML.
+func Write(w io.Writer, config interface{}) error {
+	return yaml.NewEncoder(w).Encode(config)
 }
 
-// Write the user-defined object to a YAML file.
-func WriteFile(filename string, source interface{}) (err error) {
-	data, err := yaml.Marshal(source)
+// Write the configuration to a YAML file.
+func WriteFile(filename string, config interface{}) (err error) {
+	data, err := yaml.Marshal(config)
 	if err != nil {
 		return
 	}
