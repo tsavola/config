@@ -23,7 +23,15 @@ uint16, uint32, uint64, float32, float64, string, and time.Duration.
 The Get method is provided for completeness; the intended way to access
 configuration values is through direct struct field access.
 
-Example:
+Short example:
+
+	c := new(myConfig)
+
+	flag.Var(config.FileReader(c), "f", "read config from YAML files")
+	flag.Var(config.Assigner(c), "c", "set config keys (path.to.key=value)")
+	flag.Parse()
+
+Longer example:
 
 	package main
 
