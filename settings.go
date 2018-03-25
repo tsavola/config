@@ -63,8 +63,13 @@ func enumerate(list []Setting, prefix string, node reflect.Value) []Setting {
 	return list
 }
 
-// PrintSettings of the given configuration.
+// PrintSettings of the given configuration.  Writer defaults to the default
+// flag set's output.
 func PrintSettings(w io.Writer, config interface{}) {
+	if w == nil {
+		w = flag.CommandLine.Output()
+	}
+
 	for _, s := range Settings(config) {
 		fmt.Fprintf(w, "  %s %s\n", s.Path, s.Type)
 	}
@@ -76,9 +81,8 @@ func FlagUsage(config interface{}) func() {
 	stdUsage := flag.Usage
 
 	return func() {
-		w := flag.CommandLine.Output()
 		stdUsage()
-		fmt.Fprintf(w, "\nConfiguration settings:\n")
-		PrintSettings(w, config)
+		fmt.Fprintf(flag.CommandLine.Output(), "\nConfiguration settings:\n")
+		PrintSettings(nil, config)
 	}
 }
