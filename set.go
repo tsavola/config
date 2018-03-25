@@ -14,6 +14,7 @@ import (
 )
 
 var intBitSize = int(unsafe.Sizeof(int(0)) * 8)
+var durationType = reflect.TypeOf(time.Second)
 
 // Set a field of the object pointed to by target.  The value must have the
 // same type as the field.
@@ -49,9 +50,9 @@ func SetFromString(target interface{}, path string, value string) (err error) {
 // doesn't exist or parsing fails.
 func MustSetFromString(target interface{}, path string, value string) {
 	node := lookup(target, path)
-	kind := node.Type().Kind()
+	t := node.Type()
 
-	switch kind {
+	switch t.Kind() {
 	case reflect.Bool:
 		setBoolFromString(node, value)
 
@@ -68,7 +69,11 @@ func MustSetFromString(target interface{}, path string, value string) {
 		setIntFromString(node, value, 32)
 
 	case reflect.Int64:
-		if d, err := time.ParseDuration(value); err == nil {
+		if t == durationType {
+			d, err := time.ParseDuration(value)
+			if err != nil {
+				panic(err)
+			}
 			node.SetInt(int64(d))
 		} else {
 			setIntFromString(node, value, 64)
@@ -99,7 +104,7 @@ func MustSetFromString(target interface{}, path string, value string) {
 		node.SetString(value)
 
 	default:
-		panic(fmt.Errorf("unsupported field type: %s", kind))
+		panic(fmt.Errorf("unsupported field type: %s", t))
 	}
 }
 
