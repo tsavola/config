@@ -20,7 +20,7 @@ var durationType = reflect.TypeOf(time.Second)
 // same type as the field.
 func Set(target interface{}, path string, value interface{}) (err error) {
 	defer func() {
-		err = settingError(path, recover())
+		err = asError(recover())
 	}()
 
 	MustSet(target, path, value)
@@ -38,7 +38,7 @@ func MustSet(target interface{}, path string, value interface{}) {
 // parsed according to the type of the field.
 func SetFromString(target interface{}, path string, value string) (err error) {
 	defer func() {
-		err = settingError(path, recover())
+		err = asError(recover())
 	}()
 
 	MustSetFromString(target, path, value)
@@ -149,7 +149,7 @@ func setFloatFromString(node reflect.Value, value string, bitSize int) {
 // path and value are parsed from an expression of the form "path=value".
 func Assign(target interface{}, expr string) (err error) {
 	defer func() {
-		err = settingError(expr, recover())
+		err = asError(recover())
 	}()
 
 	MustAssign(target, expr)
@@ -171,7 +171,7 @@ func MustAssign(target interface{}, expr string) {
 // Get the value of a field of an object.
 func Get(source interface{}, path string) (value interface{}, err error) {
 	defer func() {
-		err = settingError(path, recover())
+		err = asError(recover())
 	}()
 
 	value = lookup(source, path).Interface()
@@ -194,9 +194,12 @@ func lookup(config interface{}, path string) (node reflect.Value) {
 	return
 }
 
-func settingError(s string, x interface{}) (err error) {
+func asError(x interface{}) (err error) {
 	if x != nil {
-		err = fmt.Errorf("config: %q: %v", s, x)
+		err, _ = x.(error)
+		if err == nil {
+			err = fmt.Errorf("%v", x)
+		}
 	}
 	return
 }
