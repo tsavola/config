@@ -10,11 +10,12 @@ command-line flags.
 
 A pointer to a preallocated object of a user-defined struct must be passed to
 the configuration functions.  The type can have an arbitrary number of nested
-structs.  The object can be initialized with default values.
+structs.  Only exported fields can be used.  The object can be initialized with
+default values.
 
 The field names are spelled in lower case in YAML files and on the
-command-line.  The accessor functions and flag values use dot-delimited paths
-to identify the field, such as "audio.samplerate".
+command-line.  The accessor functions and flag values use dotted paths to
+identify the field, such as "audio.samplerate".
 
 Supported field types are bool, int, int8, int16, int32, int64, uint, uint8,
 uint16, uint32, uint64, float32, float64, string, and time.Duration.
