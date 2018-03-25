@@ -14,16 +14,16 @@ import (
 
 var intBitSize = int(unsafe.Sizeof(int(0)) * 8)
 
-func SetTyped(target interface{}, path string, value interface{}) (err error) {
+func Set(target interface{}, path string, value interface{}) (err error) {
 	defer func() {
 		err = settingError(path, recover())
 	}()
 
-	SetTypedPanic(target, path, value)
+	SetPanic(target, path, value)
 	return
 }
 
-func SetTypedPanic(target interface{}, path string, value interface{}) {
+func SetPanic(target interface{}, path string, value interface{}) {
 	lookup(target, path).Set(reflect.ValueOf(value))
 }
 
