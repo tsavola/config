@@ -9,7 +9,7 @@ import (
 )
 
 // FileReader makes a ``dynamic value'' which reads files into the
-// configuration as its receives filenames.
+// configuration as it receives filenames.
 func FileReader(config interface{}) flag.Value {
 	return fileReader{config}
 }
