@@ -18,9 +18,13 @@ func TestSetter(t *testing.T) {
 	if err := s.Parse([]string{
 		"-c", "foo.key1=true",
 		"-c", "foo.key2=-10",
+		"-c", "foo.key2b=-128",
+		"-c", "foo.key3a=-32768",
 		"-c", "foo.key3=-11",
 		"-c", "foo.key4=-100000000000000",
 		"-c", "foo.key5=10",
+		"-c", "foo.key5b=255",
+		"-c", "foo.key6a=65535",
 		"-c", "foo.key6=11",
 		"-c", "foo.key7=100000000000000",
 		"-c", "foo.key8=1.5",

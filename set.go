@@ -57,6 +57,12 @@ func MustSetFromString(target interface{}, path string, value string) {
 	case reflect.Int:
 		setIntFromString(node, value, intBitSize)
 
+	case reflect.Int8:
+		setIntFromString(node, value, 8)
+
+	case reflect.Int16:
+		setIntFromString(node, value, 16)
+
 	case reflect.Int32:
 		setIntFromString(node, value, 32)
 
@@ -65,6 +71,12 @@ func MustSetFromString(target interface{}, path string, value string) {
 
 	case reflect.Uint:
 		setUintFromString(node, value, intBitSize)
+
+	case reflect.Uint8:
+		setUintFromString(node, value, 8)
+
+	case reflect.Uint16:
+		setUintFromString(node, value, 16)
 
 	case reflect.Uint32:
 		setUintFromString(node, value, 32)
