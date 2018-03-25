@@ -48,9 +48,16 @@ Example:
 			config.Set(c, "audio.enabled", false)
 		}
 
+		dump := flag.Bool("dump", false, "create defaults.yaml")
 		flag.Var(config.Loader(c), "f", "read config from YAML files")
 		flag.Var(config.Setter(c), "c", "set config keys (path.to.key=value)")
 		flag.Parse()
+
+		if *dump {
+			if err := config.WriteFile("defaults.yaml", c); err != nil {
+				log.Fatal(err)
+			}
+		}
 
 		fmt.Printf("Comment is %q\n", c.Comment)
 		fmt.Printf("Size is %dx%d\n", c.Size.Width, c.Size.Height)
