@@ -14,7 +14,7 @@ func TestRead(t *testing.T) {
 	c := new(testConfig)
 	c.Bar = 67890
 
-	if err := Read(c, strings.NewReader(testConfigYAML)); err != nil {
+	if err := Read(strings.NewReader(testConfigYAML), c); err != nil {
 		t.Fatal(err)
 	}
 
@@ -22,11 +22,11 @@ func TestRead(t *testing.T) {
 }
 
 func TestReadFileIfExists(t *testing.T) {
-	if err := ReadFileIfExists(nil, "/nonexistent"); err != nil {
+	if err := ReadFileIfExists("/nonexistent", nil); err != nil {
 		t.Error(err)
 	}
 
-	if ReadFileIfExists(nil, "/dev/zero") == nil {
+	if ReadFileIfExists("/dev/zero", nil) == nil {
 		t.Fail()
 	}
 }
@@ -34,7 +34,7 @@ func TestReadFileIfExists(t *testing.T) {
 func TestWrite(t *testing.T) {
 	c := new(testConfig)
 
-	if err := Read(c, strings.NewReader(testConfigYAML)); err != nil {
+	if err := Read(strings.NewReader(testConfigYAML), c); err != nil {
 		t.Fatal(err)
 	}
 

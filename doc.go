@@ -8,6 +8,20 @@ Package config is an ergonomic configuration parsing toolkit.  The schema is
 declared using a struct type, and values can be read from YAML files or set via
 command-line flags.
 
+A pointer to a preallocated object of a user-defined struct must be passed to
+the configuration functions.  The type can have an arbitrary number of nested
+structs.  The object can be initialized with default values.
+
+The field names are spelled in lower case in YAML files and on the
+command-line.  The accessor functions and flag values use dot-delimited paths
+to identify the field, such as "audio.samplerate".
+
+Supported field types are bool, int, int32, int64, uint, uint32, uint64,
+float32, float64, and string.
+
+The Get method is provided for completeness; the intended way to access
+configuration values is through direct struct field access.
+
 Example:
 
 	package main
@@ -40,12 +54,12 @@ Example:
 		c.Size.Height = 480
 		c.Audio.SampleRate = 44100
 
-		if err := config.ReadFileIfExists(c, "defaults.yaml"); err != nil {
+		if err := config.ReadFileIfExists("defaults.yaml", c); err != nil {
 			log.Print(err)
 		}
 
-		if config.GetPanic(c, "audio.samplerate").(int) <= 0 {
-			config.Set(c, "audio.enabled", false)
+		if x, _ := config.Get(c, "audio.samplerate"); x.(int) <= 0 {
+			config.MustSet(c, "audio.enabled", false)
 		}
 
 		dump := flag.Bool("dump", false, "create defaults.yaml")

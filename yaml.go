@@ -12,32 +12,38 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func Read(target interface{}, r io.Reader) error {
+// Read YAML into the object pointed to by target.
+func Read(r io.Reader, target interface{}) error {
 	return yaml.NewDecoder(r).Decode(target)
 }
 
-func ReadFile(target interface{}, filename string) (err error) {
+// Read a YAML file into the object pointed to by target.
+func ReadFile(filename string, target interface{}) (err error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return
 	}
 	defer f.Close()
 
-	return Read(target, f)
+	return Read(f, target)
 }
 
-func ReadFileIfExists(target interface{}, filename string) (err error) {
-	err = ReadFile(target, filename)
+// Read a YAML file into the object pointed to by target.  No error is returned
+// if the file doesn't exist,
+func ReadFileIfExists(filename string, target interface{}) (err error) {
+	err = ReadFile(filename, target)
 	if err != nil && os.IsNotExist(err) {
 		err = nil
 	}
 	return
 }
 
+// Write the user-defined object as YAML.
 func Write(w io.Writer, source interface{}) error {
 	return yaml.NewEncoder(w).Encode(source)
 }
 
+// Write the user-defined object to a YAML file.
 func WriteFile(filename string, source interface{}) (err error) {
 	data, err := yaml.Marshal(source)
 	if err != nil {

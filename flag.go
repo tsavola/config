@@ -18,7 +18,7 @@ type loader struct {
 }
 
 func (l loader) Set(filename string) error {
-	return ReadFile(l.config, filename)
+	return ReadFile(filename, l.config)
 }
 
 func (loader) String() string {
@@ -35,7 +35,7 @@ type setter struct {
 }
 
 func (s setter) Set(expr string) error {
-	return SetExpr(s.config, expr)
+	return Apply(s.config, expr)
 }
 
 func (setter) String() string {

@@ -14,29 +14,39 @@ import (
 
 var intBitSize = int(unsafe.Sizeof(int(0)) * 8)
 
+// Set a field of the object pointed to by target.  The value must have the
+// same type as the field.
 func Set(target interface{}, path string, value interface{}) (err error) {
 	defer func() {
 		err = settingError(path, recover())
 	}()
 
-	SetPanic(target, path, value)
+	MustSet(target, path, value)
 	return
 }
 
-func SetPanic(target interface{}, path string, value interface{}) {
+// MustSet a field of the object pointed to by target.  The value must have the
+// same type as the field.  Panic if the field doesn't exist or the types don't
+// match.
+func MustSet(target interface{}, path string, value interface{}) {
 	lookup(target, path).Set(reflect.ValueOf(value))
 }
 
+// SetFromString sets a field of the object pointed to by target.  The value is
+// parsed according to the type of the field.
 func SetFromString(target interface{}, path string, value string) (err error) {
 	defer func() {
 		err = settingError(path, recover())
 	}()
 
-	SetFromStringPanic(target, path, value)
+	MustSetFromString(target, path, value)
 	return
 }
 
-func SetFromStringPanic(target interface{}, path string, value string) {
+// MustSetFromString sets a field of the object pointed to by target.  The
+// value is parsed according to the type of the field.  Panic if the field
+// doesn't exist or parsing fails.
+func MustSetFromString(target interface{}, path string, value string) {
 	node := lookup(target, path)
 	kind := node.Type().Kind()
 
@@ -113,39 +123,41 @@ func setFloatFromString(node reflect.Value, value string, bitSize int) {
 	node.SetFloat(f)
 }
 
-func SetExpr(target interface{}, expr string) (err error) {
+// Apply an assignment expression on the object pointed to by target.  The path
+// to set and the value are parsed from an expression of the form "path=value".
+func Apply(target interface{}, expr string) (err error) {
 	defer func() {
 		err = settingError(expr, recover())
 	}()
 
-	SetExprPanic(target, expr)
+	MustApply(target, expr)
 	return
 }
 
-func SetExprPanic(target interface{}, expr string) {
+// MustApply an assignment expression on the object pointed to by target.  The
+// path to set and the value are parsed from an expression of the form
+// "path=value".  Panic if the field doesn't exist or parsing fails.
+func MustApply(target interface{}, expr string) {
 	tokens := strings.SplitN(expr, "=", 2)
 	if len(tokens) != 2 {
 		panic(fmt.Errorf("invalid expression: %q", expr))
 	}
 
-	SetFromStringPanic(target, tokens[0], tokens[1])
+	MustSetFromString(target, tokens[0], tokens[1])
 }
 
-func Get(target interface{}, path string) (value interface{}, err error) {
+// Get the value of a field of an object.
+func Get(source interface{}, path string) (value interface{}, err error) {
 	defer func() {
 		err = settingError(path, recover())
 	}()
 
-	value = GetPanic(target, path)
+	value = lookup(source, path).Interface()
 	return
 }
 
-func GetPanic(target interface{}, path string) interface{} {
-	return lookup(target, path).Interface()
-}
-
-func lookup(target interface{}, path string) (node reflect.Value) {
-	node = reflect.ValueOf(target)
+func lookup(config interface{}, path string) (node reflect.Value) {
+	node = reflect.ValueOf(config)
 
 	for _, nodeName := range strings.Split(path, ".") {
 		if node.Type().Kind() == reflect.Ptr {
