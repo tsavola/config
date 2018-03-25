@@ -34,7 +34,7 @@ Example:
 		"github.com/tsavola/config"
 	)
 
-	type Config struct {
+	type myConfig struct {
 		Comment string
 
 		Size struct {
@@ -49,7 +49,7 @@ Example:
 	}
 
 	func main() {
-		c := new(Config)
+		c := new(myConfig)
 		c.Size.Width = 640
 		c.Size.Height = 480
 		c.Audio.SampleRate = 44100
@@ -63,8 +63,8 @@ Example:
 		}
 
 		dump := flag.Bool("dump", false, "create defaults.yaml")
-		flag.Var(config.Loader(c), "f", "read config from YAML files")
-		flag.Var(config.Setter(c), "c", "set config keys (path.to.key=value)")
+		flag.Var(config.FileReader(c), "f", "read config from YAML files")
+		flag.Var(config.Assigner(c), "c", "set config keys (path.to.key=value)")
 		flag.Parse()
 
 		if *dump {

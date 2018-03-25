@@ -29,7 +29,7 @@ func ReadFile(filename string, target interface{}) (err error) {
 }
 
 // Read a YAML file into the object pointed to by target.  No error is returned
-// if the file doesn't exist,
+// if the file doesn't exist.
 func ReadFileIfExists(filename string, target interface{}) (err error) {
 	err = ReadFile(filename, target)
 	if err != nil && os.IsNotExist(err) {

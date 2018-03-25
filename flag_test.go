@@ -13,7 +13,7 @@ func TestSetter(t *testing.T) {
 	c := new(testConfig)
 
 	s := flag.NewFlagSet("test", flag.PanicOnError)
-	s.Var(Setter(c), "c", "path.to.key=value")
+	s.Var(Assigner(c), "c", "path.to.key=value")
 
 	if err := s.Parse([]string{
 		"-c", "foo.key1=true",

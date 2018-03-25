@@ -145,27 +145,27 @@ func setFloatFromString(node reflect.Value, value string, bitSize int) {
 	node.SetFloat(f)
 }
 
-// Apply an assignment expression on the object pointed to by target.  The path
-// to set and the value are parsed from an expression of the form "path=value".
-func Apply(target interface{}, expr string) (err error) {
+// Assign a value to a field of the object pointed to by target.  The field's
+// path and value are parsed from an expression of the form "path=value".
+func Assign(target interface{}, expr string) (err error) {
 	defer func() {
 		err = settingError(expr, recover())
 	}()
 
-	MustApply(target, expr)
+	MustAssign(target, expr)
 	return
 }
 
-// MustApply an assignment expression on the object pointed to by target.  The
-// path to set and the value are parsed from an expression of the form
-// "path=value".  Panic if the field doesn't exist or parsing fails.
-func MustApply(target interface{}, expr string) {
+// Assign a value to a field of the object pointed to by target.  The field's
+// path and value are parsed from an expression of the form "path=value".
+// Panic if the field doesn't exist or parsing fails.
+func MustAssign(target interface{}, expr string) {
 	tokens := strings.SplitN(expr, "=", 2)
 	if len(tokens) != 2 {
-		panic(fmt.Errorf("invalid expression: %q", expr))
+		panic(fmt.Errorf("invalid assignment expression: %q", expr))
 	}
 
-	MustSetFromString(target, tokens[0], tokens[1])
+	MustSetFromString(target, strings.TrimSpace(tokens[0]), strings.TrimSpace(tokens[1]))
 }
 
 // Get the value of a field of an object.

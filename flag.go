@@ -8,36 +8,36 @@ import (
 	"flag"
 )
 
-// Loader makes a flag.Value which reads configuration files.
-func Loader(target interface{}) flag.Value {
-	return loader{target}
+// FileReader makes a flag.Value which reads configuration files.
+func FileReader(target interface{}) flag.Value {
+	return fileReader{target}
 }
 
-type loader struct {
+type fileReader struct {
 	config interface{}
 }
 
-func (l loader) Set(filename string) error {
-	return ReadFile(filename, l.config)
+func (fr fileReader) Set(filename string) error {
+	return ReadFile(filename, fr.config)
 }
 
-func (loader) String() string {
+func (fileReader) String() string {
 	return ""
 }
 
-// Setter makes a flag.Value which applies configuration expressions.
-func Setter(target interface{}) flag.Value {
-	return setter{target}
+// Assigner makes a flag.Value which applies configuration expressions.
+func Assigner(target interface{}) flag.Value {
+	return assigner{target}
 }
 
-type setter struct {
+type assigner struct {
 	config interface{}
 }
 
-func (s setter) Set(expr string) error {
-	return Apply(s.config, expr)
+func (a assigner) Set(expr string) error {
+	return Assign(a.config, expr)
 }
 
-func (setter) String() string {
+func (assigner) String() string {
 	return ""
 }
