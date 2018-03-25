@@ -27,46 +27,46 @@ func SetPanic(target interface{}, path string, value interface{}) {
 	lookup(target, path).Set(reflect.ValueOf(value))
 }
 
-func SetString(target interface{}, path string, value string) (err error) {
+func SetFromString(target interface{}, path string, value string) (err error) {
 	defer func() {
 		err = settingError(path, recover())
 	}()
 
-	SetStringPanic(target, path, value)
+	SetFromStringPanic(target, path, value)
 	return
 }
 
-func SetStringPanic(target interface{}, path string, value string) {
+func SetFromStringPanic(target interface{}, path string, value string) {
 	node := lookup(target, path)
 	kind := node.Type().Kind()
 
 	switch kind {
 	case reflect.Bool:
-		setStringBool(node, value)
+		setBoolFromString(node, value)
 
 	case reflect.Int:
-		setStringInt(node, value, intBitSize)
+		setIntFromString(node, value, intBitSize)
 
 	case reflect.Int32:
-		setStringInt(node, value, 32)
+		setIntFromString(node, value, 32)
 
 	case reflect.Int64:
-		setStringInt(node, value, 64)
+		setIntFromString(node, value, 64)
 
 	case reflect.Uint:
-		setStringUint(node, value, intBitSize)
+		setUintFromString(node, value, intBitSize)
 
 	case reflect.Uint32:
-		setStringUint(node, value, 32)
+		setUintFromString(node, value, 32)
 
 	case reflect.Uint64:
-		setStringUint(node, value, 64)
+		setUintFromString(node, value, 64)
 
 	case reflect.Float32:
-		setStringFloat(node, value, 32)
+		setFloatFromString(node, value, 32)
 
 	case reflect.Float64:
-		setStringFloat(node, value, 64)
+		setFloatFromString(node, value, 64)
 
 	case reflect.String:
 		node.SetString(value)
@@ -76,7 +76,7 @@ func SetStringPanic(target interface{}, path string, value string) {
 	}
 }
 
-func setStringBool(node reflect.Value, value string) {
+func setBoolFromString(node reflect.Value, value string) {
 	switch strings.ToLower(value) {
 	case "false", "no", "n", "off":
 		node.SetBool(false)
@@ -89,7 +89,7 @@ func setStringBool(node reflect.Value, value string) {
 	}
 }
 
-func setStringInt(node reflect.Value, value string, bitSize int) {
+func setIntFromString(node reflect.Value, value string, bitSize int) {
 	i, err := strconv.ParseInt(value, 10, bitSize)
 	if err != nil {
 		panic(err)
@@ -97,7 +97,7 @@ func setStringInt(node reflect.Value, value string, bitSize int) {
 	node.SetInt(i)
 }
 
-func setStringUint(node reflect.Value, value string, bitSize int) {
+func setUintFromString(node reflect.Value, value string, bitSize int) {
 	i, err := strconv.ParseUint(value, 10, bitSize)
 	if err != nil {
 		panic(err)
@@ -105,7 +105,7 @@ func setStringUint(node reflect.Value, value string, bitSize int) {
 	node.SetUint(i)
 }
 
-func setStringFloat(node reflect.Value, value string, bitSize int) {
+func setFloatFromString(node reflect.Value, value string, bitSize int) {
 	f, err := strconv.ParseFloat(value, bitSize)
 	if err != nil {
 		panic(err)
@@ -128,7 +128,7 @@ func SetExprPanic(target interface{}, expr string) {
 		panic(fmt.Errorf("invalid expression: %q", expr))
 	}
 
-	SetStringPanic(target, tokens[0], tokens[1])
+	SetFromStringPanic(target, tokens[0], tokens[1])
 }
 
 func Get(target interface{}, path string) (value interface{}, err error) {
