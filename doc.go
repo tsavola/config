@@ -28,28 +28,34 @@ Example:
 			Height uint32
 		}
 
-		Sampling   bool
-		SampleRate int
+		Audio struct {
+			Enabled    bool
+			SampleRate int
+		}
 	}
 
 	func main() {
 		c := new(Config)
-		c.SampleRate = 44100
 		c.Size.Width = 640
 		c.Size.Height = 480
+		c.Audio.SampleRate = 44100
 
-		if err := config.ReadFileIfExists("defaults.yaml"); err != nil {
+		if err := config.ReadFileIfExists(c, "defaults.yaml"); err != nil {
 			log.Print(err)
+		}
+
+		if config.GetPanic(c, "audio.samplerate").(int) <= 0 {
+			config.Set(c, "audio.enabled", false)
 		}
 
 		flag.Var(config.Loader(c), "f", "read config from YAML files")
 		flag.Var(config.Setter(c), "c", "set config keys (path.to.key=value)")
 		flag.Parse()
 
-		fmt.Printf("Comment is %q", c.Comment)
-		fmt.Printf("Size is %dx%d", c.Size.Width, c.Size.Height)
-		if c.Sampling {
-			fmt.Printf("Sampling rate is %d", c.SampleRate)
+		fmt.Printf("Comment is %q\n", c.Comment)
+		fmt.Printf("Size is %dx%d\n", c.Size.Width, c.Size.Height)
+		if c.Audio.Enabled {
+			fmt.Printf("Sample rate is %d\n", c.Audio.SampleRate)
 		}
 	}
 
