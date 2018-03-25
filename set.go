@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 	"unsafe"
 )
 
@@ -67,7 +68,11 @@ func MustSetFromString(target interface{}, path string, value string) {
 		setIntFromString(node, value, 32)
 
 	case reflect.Int64:
-		setIntFromString(node, value, 64)
+		if d, err := time.ParseDuration(value); err == nil {
+			node.SetInt(int64(d))
+		} else {
+			setIntFromString(node, value, 64)
+		}
 
 	case reflect.Uint:
 		setUintFromString(node, value, intBitSize)

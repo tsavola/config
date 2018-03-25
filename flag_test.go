@@ -32,7 +32,8 @@ func TestSetter(t *testing.T) {
 		"-c", "foo.key10=hello, world",
 		"-c", "bar=12345",
 		"-c", "baz.quux.key_a=true",
-		"-c", "baz.quux.key_b=true",
+		"-c", "baz.quux.key_b=yes",
+		"-c", "baz.interval=10h9m8s7ms6µs5ns",
 	}); err != nil {
 		t.Fatal(err)
 	}

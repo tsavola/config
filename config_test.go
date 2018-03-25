@@ -6,6 +6,7 @@ package config
 
 import (
 	"testing"
+	"time"
 )
 
 type testConfig struct {
@@ -29,7 +30,8 @@ type testConfig struct {
 	Bar int
 
 	Baz struct {
-		Quux testConfigQuux
+		Quux     testConfigQuux
+		Interval time.Duration
 	}
 }
 
@@ -58,10 +60,11 @@ baz:
   quux:
     key_a: "true"
     key_b: true
+  interval: 10h9m8.007006005s
 `
 
 func testConfigValues(t *testing.T, c *testConfig) {
-	if c.Foo.Key1 != true {
+	if !c.Foo.Key1 {
 		t.Fail()
 	}
 	if c.Foo.Key2 != -10 {
@@ -109,7 +112,10 @@ func testConfigValues(t *testing.T, c *testConfig) {
 	if c.Baz.Quux.Key_a != "true" {
 		t.Fail()
 	}
-	if c.Baz.Quux.Key_b != true {
+	if !c.Baz.Quux.Key_b {
+		t.Fail()
+	}
+	if c.Baz.Interval != 10*time.Hour+9*time.Minute+8*time.Second+7*time.Millisecond+6*time.Microsecond+5*time.Nanosecond {
 		t.Fail()
 	}
 }
