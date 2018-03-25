@@ -7,10 +7,12 @@ package config
 import (
 	"flag"
 	"fmt"
+	"io"
 	"reflect"
 	"strings"
 )
 
+// Setting documents a settable configuration path.
 type Setting struct {
 	Path string
 	Type reflect.Type
@@ -20,6 +22,7 @@ func (s Setting) String() string {
 	return s.Path
 }
 
+// Settings lists the settable configuration paths.
 func Settings(config interface{}) (settings []Setting) {
 	settings = enumerate(settings, "", reflect.ValueOf(config))
 	return
@@ -60,18 +63,22 @@ func enumerate(list []Setting, prefix string, node reflect.Value) []Setting {
 	return list
 }
 
-func PrintSettings(config interface{}) {
+// PrintSettings of the given configuration.
+func PrintSettings(w io.Writer, config interface{}) {
 	for _, s := range Settings(config) {
-		fmt.Fprintf(flag.CommandLine.Output(), "  %s %s\n", s.Path, s.Type)
+		fmt.Fprintf(w, "  %s %s\n", s.Path, s.Type)
 	}
 }
 
+// FlagUsage creates a function which may be used as flag.Usage.  It includes
+// the default usage and the configuration settings.
 func FlagUsage(config interface{}) func() {
 	stdUsage := flag.Usage
 
 	return func() {
+		w := flag.CommandLine.Output()
 		stdUsage()
-		fmt.Fprintf(flag.CommandLine.Output(), "\nConfiguration settings:\n")
-		PrintSettings(config)
+		fmt.Fprintf(w, "\nConfiguration settings:\n")
+		PrintSettings(w, config)
 	}
 }
