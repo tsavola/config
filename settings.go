@@ -23,9 +23,8 @@ func (s Setting) String() string {
 }
 
 // Settings lists the settable configuration paths.
-func Settings(config interface{}) (settings []Setting) {
-	settings = enumerate(settings, "", reflect.ValueOf(config))
-	return
+func Settings(config interface{}) []Setting {
+	return enumerate(nil, "", reflect.ValueOf(config))
 }
 
 func enumerate(list []Setting, prefix string, node reflect.Value) []Setting {
