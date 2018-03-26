@@ -13,6 +13,7 @@ import (
 
 func TestAssigner(t *testing.T) {
 	c := new(testConfig)
+	c.Baz.Embed2.TestConfigEmbed = new(TestConfigEmbed)
 
 	s := flag.NewFlagSet("test", flag.PanicOnError)
 	s.Var(Assigner(c), "c", "path.to.key=value")

@@ -34,6 +34,14 @@ type testConfig struct {
 	Baz struct {
 		Quux     testConfigQuux
 		Interval time.Duration
+
+		TestConfigEmbed
+		Embed1 struct {
+			TestConfigEmbed
+		}
+		Embed2 struct {
+			*TestConfigEmbed
+		}
 	}
 
 	Dummy struct{}
@@ -52,6 +60,10 @@ type testConfig struct {
 type testConfigQuux struct {
 	Key_a string
 	Key_b bool
+}
+
+type TestConfigEmbed struct {
+	Embedded bool
 }
 
 var testConfigYAML = `foo:
@@ -78,6 +90,11 @@ baz:
     key_a: "true"
     key_b: true
   interval: 10h9m8.007006005s
+  embedded: false
+  embed1:
+    embedded: false
+  embed2:
+    embedded: false
 `
 
 func testConfigValues(t *testing.T, c *testConfig) {
@@ -133,6 +150,15 @@ func testConfigValues(t *testing.T, c *testConfig) {
 		t.Fail()
 	}
 	if !c.Baz.Quux.Key_b {
+		t.Fail()
+	}
+	if c.Baz.Embedded {
+		t.Fail()
+	}
+	if c.Baz.Embed1.Embedded {
+		t.Fail()
+	}
+	if c.Baz.Embed2.Embedded {
 		t.Fail()
 	}
 	if c.Baz.Interval != 10*time.Hour+9*time.Minute+8*time.Second+7*time.Millisecond+6*time.Microsecond+5*time.Nanosecond {

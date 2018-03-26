@@ -13,6 +13,7 @@ import (
 func TestRead(t *testing.T) {
 	c := new(testConfig)
 	c.Bar = 67890
+	c.Baz.Embed2.TestConfigEmbed = new(TestConfigEmbed)
 
 	if err := Read(strings.NewReader(testConfigYAML), c); err != nil {
 		t.Fatal(err)
@@ -33,6 +34,7 @@ func TestReadFileIfExists(t *testing.T) {
 
 func TestWrite(t *testing.T) {
 	c := new(testConfig)
+	c.Baz.Embed2.TestConfigEmbed = new(TestConfigEmbed)
 
 	if err := Read(strings.NewReader(testConfigYAML), c); err != nil {
 		t.Fatal(err)

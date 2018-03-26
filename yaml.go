@@ -42,12 +42,12 @@ func ReadFileIfExists(filename string, config interface{}) (err error) {
 
 // Write the configuration as YAML.
 func Write(w io.Writer, config interface{}) error {
-	return yaml.NewEncoder(w).Encode(sanitize(reflect.ValueOf(config).Elem()))
+	return yaml.NewEncoder(w).Encode(sanitize(nil, reflect.ValueOf(config).Elem()))
 }
 
 // Write the configuration to a YAML file.
 func WriteFile(filename string, config interface{}) (err error) {
-	data, err := yaml.Marshal(sanitize(reflect.ValueOf(config).Elem()))
+	data, err := yaml.Marshal(sanitize(nil, reflect.ValueOf(config).Elem()))
 	if err != nil {
 		return
 	}
@@ -55,7 +55,7 @@ func WriteFile(filename string, config interface{}) (err error) {
 	return ioutil.WriteFile(filename, data, 0666)
 }
 
-func sanitize(struc reflect.Value) (sane yaml.MapSlice) {
+func sanitize(sane yaml.MapSlice, struc reflect.Value) yaml.MapSlice {
 	for i := 0; i < struc.Type().NumField(); i++ {
 		value := struc.Field(i)
 		if !value.CanInterface() {
@@ -78,19 +78,21 @@ func sanitize(struc reflect.Value) (sane yaml.MapSlice) {
 				x = value.Interface()
 			}
 
-		case reflect.Struct:
-			if s := sanitize(value); len(s) > 0 {
-				x = s
-			}
-
 		case reflect.Ptr:
-			if !value.IsNil() {
-				switch value.Type().Elem().Kind() {
-				case reflect.Struct:
-					if s := sanitize(value.Elem()); len(s) > 0 {
-						x = s
-					}
-				}
+			if value.IsNil() {
+				break
+			}
+			if value.Type().Elem().Kind() != reflect.Struct {
+				break
+			}
+			value = value.Elem()
+			fallthrough
+
+		case reflect.Struct:
+			if field.Anonymous {
+				sane = sanitize(sane, value)
+			} else if s := sanitize(nil, value); len(s) > 0 {
+				x = s
 			}
 		}
 
@@ -102,5 +104,5 @@ func sanitize(struc reflect.Value) (sane yaml.MapSlice) {
 		}
 	}
 
-	return
+	return sane
 }
