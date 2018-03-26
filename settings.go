@@ -61,12 +61,25 @@ func enumerate(list []Setting, prefix string, node reflect.Value) []Setting {
 			case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64, reflect.String:
 				s := Setting{
 					Path: path,
-					Type: field.Type,
+					Type: value.Type(),
 				}
-				if x := value.Interface(); x != reflect.Zero(field.Type).Interface() {
+				if x := value.Interface(); x != reflect.Zero(value.Type()).Interface() {
 					s.Default = fmt.Sprint(x)
 				}
 				list = append(list, s)
+
+			case reflect.Array, reflect.Slice:
+				switch value.Type().Elem().Kind() {
+				case reflect.String:
+					s := Setting{
+						Path: path,
+						Type: value.Type(),
+					}
+					if repr := fmt.Sprintf("%q", value.Interface()); len(repr) > 2 {
+						s.Default = repr
+					}
+					list = append(list, s)
+				}
 
 			case reflect.Struct:
 				list = enumerate(list, path, value)
