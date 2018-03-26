@@ -35,77 +35,87 @@ func MustSet(config interface{}, path string, value interface{}) {
 	lookup(config, path).Set(reflect.ValueOf(value))
 }
 
-// SetFromString sets a field of the configuration object.  The value is parsed
-// according to the type of the field.
-func SetFromString(config interface{}, path string, value string) (err error) {
+// SetFromString sets a field of the configuration object.  The value
+// representation is parsed according to the type of the field.
+//
+// Valid boolean representations are "true", "false", "yes", "no", "y", "n",
+// "on", and "off".
+//
+// If the representation of a string list is the empty string, the field will
+// be an empty list.  If the representation starts with "[", it is assumed to
+// be a JSON-encoded string array.  Otherwise the length will be one, and repr
+// will be the single item.
+func SetFromString(config interface{}, path string, repr string) (err error) {
 	defer func() {
 		err = asError(recover())
 	}()
 
-	MustSetFromString(config, path, value)
+	MustSetFromString(config, path, repr)
 	return
 }
 
-// MustSetFromString sets a field of the configuration object.  The value is
-// parsed according to the type of the field.  Panic if the field doesn't exist
-// or parsing fails.
-func MustSetFromString(config interface{}, path string, value string) {
+// MustSetFromString sets a field of the configuration object.  The value
+// representation is parsed according to the type of the field.  Panic if the
+// field doesn't exist or parsing fails.
+//
+// See SetFromString for parsing rules.
+func MustSetFromString(config interface{}, path string, repr string) {
 	node := lookup(config, path)
 
 	switch node.Kind() {
 	case reflect.Bool:
-		setBoolFromString(node, value)
+		setBoolFromString(node, repr)
 
 	case reflect.Int:
-		setIntFromString(node, value, intBitSize)
+		setIntFromString(node, repr, intBitSize)
 
 	case reflect.Int8:
-		setIntFromString(node, value, 8)
+		setIntFromString(node, repr, 8)
 
 	case reflect.Int16:
-		setIntFromString(node, value, 16)
+		setIntFromString(node, repr, 16)
 
 	case reflect.Int32:
-		setIntFromString(node, value, 32)
+		setIntFromString(node, repr, 32)
 
 	case reflect.Int64:
 		if node.Type() == durationType {
-			d, err := time.ParseDuration(value)
+			d, err := time.ParseDuration(repr)
 			if err != nil {
 				panic(err)
 			}
 			node.SetInt(int64(d))
 		} else {
-			setIntFromString(node, value, 64)
+			setIntFromString(node, repr, 64)
 		}
 
 	case reflect.Uint:
-		setUintFromString(node, value, intBitSize)
+		setUintFromString(node, repr, intBitSize)
 
 	case reflect.Uint8:
-		setUintFromString(node, value, 8)
+		setUintFromString(node, repr, 8)
 
 	case reflect.Uint16:
-		setUintFromString(node, value, 16)
+		setUintFromString(node, repr, 16)
 
 	case reflect.Uint32:
-		setUintFromString(node, value, 32)
+		setUintFromString(node, repr, 32)
 
 	case reflect.Uint64:
-		setUintFromString(node, value, 64)
+		setUintFromString(node, repr, 64)
 
 	case reflect.Float32:
-		setFloatFromString(node, value, 32)
+		setFloatFromString(node, repr, 32)
 
 	case reflect.Float64:
-		setFloatFromString(node, value, 64)
+		setFloatFromString(node, repr, 64)
 
 	case reflect.String:
-		node.SetString(value)
+		node.SetString(repr)
 
 	case reflect.Slice:
 		if node.Type().Elem().Kind() == reflect.String {
-			setSliceFromString(node, value)
+			setSliceFromString(node, repr)
 			break
 		}
 		fallthrough
@@ -114,8 +124,8 @@ func MustSetFromString(config interface{}, path string, value string) {
 	}
 }
 
-func setBoolFromString(node reflect.Value, value string) {
-	switch strings.ToLower(value) {
+func setBoolFromString(node reflect.Value, repr string) {
+	switch strings.ToLower(repr) {
 	case "false", "no", "n", "off":
 		node.SetBool(false)
 
@@ -123,55 +133,57 @@ func setBoolFromString(node reflect.Value, value string) {
 		node.SetBool(true)
 
 	default:
-		panic(fmt.Errorf("invalid boolean string: %q", value))
+		panic(fmt.Errorf("invalid boolean string: %q", repr))
 	}
 }
 
-func setIntFromString(node reflect.Value, value string, bitSize int) {
-	i, err := strconv.ParseInt(value, 10, bitSize)
+func setIntFromString(node reflect.Value, repr string, bitSize int) {
+	i, err := strconv.ParseInt(repr, 10, bitSize)
 	if err != nil {
 		panic(err)
 	}
 	node.SetInt(i)
 }
 
-func setUintFromString(node reflect.Value, value string, bitSize int) {
-	i, err := strconv.ParseUint(value, 10, bitSize)
+func setUintFromString(node reflect.Value, repr string, bitSize int) {
+	i, err := strconv.ParseUint(repr, 10, bitSize)
 	if err != nil {
 		panic(err)
 	}
 	node.SetUint(i)
 }
 
-func setFloatFromString(node reflect.Value, value string, bitSize int) {
-	f, err := strconv.ParseFloat(value, bitSize)
+func setFloatFromString(node reflect.Value, repr string, bitSize int) {
+	f, err := strconv.ParseFloat(repr, bitSize)
 	if err != nil {
 		panic(err)
 	}
 	node.SetFloat(f)
 }
 
-func setSliceFromString(node reflect.Value, value string) {
+func setSliceFromString(node reflect.Value, repr string) {
 	var slice []string
 
 	switch {
-	case value == "":
+	case repr == "":
 		// ok
 
-	case strings.HasPrefix(value, `[`):
-		if err := json.Unmarshal([]byte(value), &slice); err != nil {
+	case strings.HasPrefix(repr, "["):
+		if err := json.Unmarshal([]byte(repr), &slice); err != nil {
 			panic(err)
 		}
 
 	default:
-		slice = []string{value}
+		slice = []string{repr}
 	}
 
 	node.Set(reflect.ValueOf(slice))
 }
 
 // Assign a value to a field of the configuration object.  The field's path and
-// value are parsed from an expression of the form "path=value".
+// string representation are parsed from an expression of the form "path=repr".
+//
+// See SetFromString for parsing rules.
 func Assign(config interface{}, expr string) (err error) {
 	defer func() {
 		err = asError(recover())
@@ -182,8 +194,10 @@ func Assign(config interface{}, expr string) (err error) {
 }
 
 // Assign a value to a field of the configuration object.  The field's path and
-// value are parsed from an expression of the form "path=value".  Panic if the
-// field doesn't exist or parsing fails.
+// string representation are parsed from an expression of the form "path=repr".
+// Panic if the field doesn't exist or parsing fails.
+//
+// See SetFromString for parsing rules.
 func MustAssign(config interface{}, expr string) {
 	tokens := strings.SplitN(expr, "=", 2)
 	if len(tokens) != 2 {
