@@ -68,7 +68,7 @@ func enumerate(list []Setting, prefix string, node reflect.Value) []Setting {
 				}
 				list = append(list, s)
 
-			case reflect.Array, reflect.Slice:
+			case reflect.Slice:
 				switch value.Type().Elem().Kind() {
 				case reflect.String:
 					s := Setting{

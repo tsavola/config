@@ -5,6 +5,7 @@
 package config
 
 import (
+	"reflect"
 	"testing"
 	"time"
 )
@@ -73,6 +74,13 @@ func TestSet(t *testing.T) {
 		t.Error(err)
 	}
 	if c.Foo.Key10 != "Hello, World" {
+		t.Fail()
+	}
+
+	if err := Set(c, "foo.key11", []string{"Hello", "World"}); err != nil {
+		t.Error(err)
+	}
+	if !reflect.DeepEqual(c.Foo.Key11, []string{"Hello", "World"}) {
 		t.Fail()
 	}
 

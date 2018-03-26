@@ -5,6 +5,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -102,6 +103,12 @@ func MustSetFromString(config interface{}, path string, value string) {
 	case reflect.String:
 		node.SetString(value)
 
+	case reflect.Slice:
+		if node.Type().Elem().Kind() == reflect.String {
+			setSliceFromString(node, value)
+			break
+		}
+		fallthrough
 	default:
 		panic(fmt.Errorf("unsupported field type: %s", node.Type()))
 	}
@@ -142,6 +149,25 @@ func setFloatFromString(node reflect.Value, value string, bitSize int) {
 		panic(err)
 	}
 	node.SetFloat(f)
+}
+
+func setSliceFromString(node reflect.Value, value string) {
+	var slice []string
+
+	switch {
+	case value == "":
+		// ok
+
+	case strings.HasPrefix(value, `[`):
+		if err := json.Unmarshal([]byte(value), &slice); err != nil {
+			panic(err)
+		}
+
+	default:
+		slice = []string{value}
+	}
+
+	node.Set(reflect.ValueOf(slice))
 }
 
 // Assign a value to a field of the configuration object.  The field's path and

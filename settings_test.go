@@ -30,6 +30,7 @@ func TestSettings(t *testing.T) {
 		{"foo.key8", reflect.TypeOf(float32(0)), ""},
 		{"foo.key9", reflect.TypeOf(0.0), ""},
 		{"foo.key10", reflect.TypeOf(""), ""},
+		{"foo.key11", reflect.TypeOf([]string{}), ""},
 		{"bar", reflect.TypeOf(0), "12345"},
 		{"baz.quux.key_a", reflect.TypeOf(""), ""},
 		{"baz.quux.key_b", reflect.TypeOf(false), ""},

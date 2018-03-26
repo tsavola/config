@@ -33,6 +33,7 @@ func TestAssigner(t *testing.T) {
 			"-c", "foo.key8=1.5",
 			"-c", "foo.key9=1.0000000000005",
 			"-c", "foo.key10=hello, world",
+			"-c", `foo.key11=["hello", "world"]`,
 			"-c", "bar=12345",
 			"-c", "baz.quux.key_a=true",
 			"-c", "baz.quux.key_b=yes",
@@ -79,6 +80,31 @@ func TestAssigner(t *testing.T) {
 				"-c", fmt.Sprintf("%s=1", path),
 			})
 			t.Fail()
+		})
+	}
+
+	for _, spec := range []struct {
+		num int
+		arg string
+	}{
+		{0, ""},
+		{0, `[]`},
+		{1, "one"},
+		{1, `["one"]`},
+		{1, `[""]`},
+		{2, `["two","two"]`},
+		{2, `["",""]`},
+		{3, ` [ "th", "r", "ee" ] `},
+	} {
+		t.Run("StringSlice", func(t *testing.T) {
+			if err := s.Parse([]string{
+				"-c", fmt.Sprintf("foo.key11=%s", spec.arg),
+			}); err != nil {
+				t.Fatal(err)
+			}
+			if len(c.Foo.Key11) != spec.num {
+				t.Fail()
+			}
 		})
 	}
 }

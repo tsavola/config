@@ -5,6 +5,7 @@
 package config
 
 import (
+	"reflect"
 	"testing"
 	"time"
 )
@@ -25,6 +26,7 @@ type testConfig struct {
 		Key8  float32
 		Key9  float64
 		Key10 string
+		Key11 []string
 	}
 
 	Bar int
@@ -55,6 +57,9 @@ var testConfigYAML = `foo:
   key8: 1.5
   key9: 1.0000000000005
   key10: hello, world
+  key11:
+  - hello
+  - world
 bar: 12345
 baz:
   quux:
@@ -104,6 +109,9 @@ func testConfigValues(t *testing.T, c *testConfig) {
 		t.Fail()
 	}
 	if c.Foo.Key10 != "hello, world" {
+		t.Fail()
+	}
+	if !reflect.DeepEqual(c.Foo.Key11, []string{"hello", "world"}) {
 		t.Fail()
 	}
 	if c.Bar != 12345 {

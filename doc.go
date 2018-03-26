@@ -19,7 +19,7 @@ command-line.  The accessor functions and flag values use dotted paths to
 identify the field, such as "audio.samplerate".
 
 Supported field types are bool, int, int8, int16, int32, int64, uint, uint8,
-uint16, uint32, uint64, float32, float64, string, and time.Duration.
+uint16, uint32, uint64, float32, float64, string, []string, and time.Duration.
 
 The Get method is provided for completeness; the intended way to access
 configuration values is through direct struct field access.
