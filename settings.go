@@ -14,8 +14,9 @@ import (
 
 // Setting documents a settable configuration path.
 type Setting struct {
-	Path string
-	Type reflect.Type
+	Path    string
+	Type    reflect.Type
+	Default string
 }
 
 func (s Setting) String() string {
@@ -53,7 +54,14 @@ func enumerate(list []Setting, prefix string, node reflect.Value) []Setting {
 		} else {
 			switch kind {
 			case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64, reflect.String:
-				list = append(list, Setting{path, field.Type})
+				s := Setting{
+					Path: path,
+					Type: field.Type,
+				}
+				if x := node.Field(i).Interface(); x != reflect.Zero(field.Type).Interface() {
+					s.Default = fmt.Sprint(x)
+				}
+				list = append(list, s)
 
 			case reflect.Struct:
 				list = enumerate(list, path, node.Field(i))
@@ -72,7 +80,11 @@ func PrintSettings(w io.Writer, config interface{}) {
 	}
 
 	for _, s := range Settings(config) {
-		fmt.Fprintf(w, "  %s %s\n", s.Path, s.Type)
+		if s.Default == "" {
+			fmt.Fprintf(w, "  %s %s\n", s.Path, s.Type)
+		} else {
+			fmt.Fprintf(w, "  %s %s (%s)\n", s.Path, s.Type, s.Default)
+		}
 	}
 }
 
