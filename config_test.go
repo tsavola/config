@@ -35,6 +35,18 @@ type testConfig struct {
 		Quux     testConfigQuux
 		Interval time.Duration
 	}
+
+	Dummy struct{}
+	_     struct{}
+
+	Ignore struct {
+		A *int
+		B *struct{}
+		C func()
+		*int
+		_ *struct{}
+		d func()
+	}
 }
 
 type testConfigQuux struct {
