@@ -37,6 +37,11 @@ func enumerate(list []Setting, prefix string, node reflect.Value) []Setting {
 	}
 
 	for i := 0; i < node.Type().NumField(); i++ {
+		value := node.Field(i)
+		if !value.CanInterface() {
+			continue
+		}
+
 		field := node.Type().Field(i)
 
 		path := prefix
@@ -50,7 +55,7 @@ func enumerate(list []Setting, prefix string, node reflect.Value) []Setting {
 		kind := field.Type.Kind()
 
 		if kind == reflect.Ptr {
-			list = enumerate(list, path, node.Field(i))
+			list = enumerate(list, path, value)
 		} else {
 			switch kind {
 			case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64, reflect.String:
@@ -58,13 +63,13 @@ func enumerate(list []Setting, prefix string, node reflect.Value) []Setting {
 					Path: path,
 					Type: field.Type,
 				}
-				if x := node.Field(i).Interface(); x != reflect.Zero(field.Type).Interface() {
+				if x := value.Interface(); x != reflect.Zero(field.Type).Interface() {
 					s.Default = fmt.Sprint(x)
 				}
 				list = append(list, s)
 
 			case reflect.Struct:
-				list = enumerate(list, path, node.Field(i))
+				list = enumerate(list, path, value)
 			}
 		}
 	}
