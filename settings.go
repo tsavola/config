@@ -29,6 +29,9 @@ func Settings(config interface{}) []Setting {
 
 func enumerate(list []Setting, prefix string, node reflect.Value) []Setting {
 	if node.Type().Kind() == reflect.Ptr {
+		if node.IsNil() {
+			return nil
+		}
 		node = node.Elem()
 	}
 
