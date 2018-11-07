@@ -42,12 +42,12 @@ func ReadFileIfExists(filename string, config interface{}) (err error) {
 
 // Write the configuration as YAML.
 func Write(w io.Writer, config interface{}) error {
-	return yaml.NewEncoder(w).Encode(sanitize(nil, reflect.ValueOf(config).Elem()))
+	return yaml.NewEncoder(w).Encode(sanitizeContainer(nil, reflect.ValueOf(config).Elem()))
 }
 
 // Write the configuration to a YAML file.
 func WriteFile(filename string, config interface{}) (err error) {
-	data, err := yaml.Marshal(sanitize(nil, reflect.ValueOf(config).Elem()))
+	data, err := yaml.Marshal(sanitizeContainer(nil, reflect.ValueOf(config).Elem()))
 	if err != nil {
 		return
 	}
@@ -55,48 +55,48 @@ func WriteFile(filename string, config interface{}) (err error) {
 	return ioutil.WriteFile(filename, data, 0666)
 }
 
-func sanitize(sane yaml.MapSlice, struc reflect.Value) yaml.MapSlice {
-	for i := 0; i < struc.Type().NumField(); i++ {
-		value := struc.Field(i)
+func sanitizeContainer(sane yaml.MapSlice, node reflect.Value) yaml.MapSlice {
+	switch node.Kind() {
+	case reflect.Map:
+		return sanitizeMap(sane, node)
+
+	case reflect.Struct:
+		return sanitizeStruct(sane, node)
+
+	default:
+		panic("must be a struct or a map")
+	}
+}
+
+func sanitizeMap(sane yaml.MapSlice, node reflect.Value) yaml.MapSlice {
+	for _, key := range reflectMapKeyStrings(node) {
+		value := node.MapIndex(reflect.ValueOf(key))
+
+		if value.Kind() == reflect.Interface {
+			value = value.Elem()
+		}
+
+		if x := sanitizeValue(sane, value, false); x != nil {
+			sane = append(sane, yaml.MapItem{
+				Key:   key,
+				Value: x,
+			})
+		}
+	}
+
+	return sane
+}
+
+func sanitizeStruct(sane yaml.MapSlice, node reflect.Value) yaml.MapSlice {
+	for i := 0; i < node.Type().NumField(); i++ {
+		value := node.Field(i)
 		if !value.CanInterface() {
 			continue
 		}
 
-		var (
-			field = struc.Type().Field(i)
-			kind  = field.Type.Kind()
-			x     interface{}
-		)
+		field := node.Type().Field(i)
 
-		switch kind {
-		case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64, reflect.String:
-			x = value.Interface()
-
-		case reflect.Slice:
-			switch value.Type().Elem().Kind() {
-			case reflect.String:
-				x = value.Interface()
-			}
-
-		case reflect.Ptr:
-			if value.IsNil() {
-				break
-			}
-			if value.Type().Elem().Kind() != reflect.Struct {
-				break
-			}
-			value = value.Elem()
-			fallthrough
-
-		case reflect.Struct:
-			if field.Anonymous {
-				sane = sanitize(sane, value)
-			} else if s := sanitize(nil, value); len(s) > 0 {
-				x = s
-			}
-		}
-
-		if x != nil {
+		if x := sanitizeValue(sane, value, field.Anonymous); x != nil {
 			sane = append(sane, yaml.MapItem{
 				Key:   strings.ToLower(field.Name),
 				Value: x,
@@ -105,4 +105,41 @@ func sanitize(sane yaml.MapSlice, struc reflect.Value) yaml.MapSlice {
 	}
 
 	return sane
+}
+
+func sanitizeValue(sane yaml.MapSlice, value reflect.Value, anonymous bool) (x interface{}) {
+	switch value.Kind() {
+	case reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64, reflect.String:
+		x = value.Interface()
+
+	case reflect.Slice:
+		switch value.Type().Elem().Kind() {
+		case reflect.String:
+			x = value.Interface()
+		}
+
+	case reflect.Map:
+		if s := sanitizeMap(nil, value); len(s) > 0 {
+			x = s
+		}
+
+	case reflect.Ptr:
+		if value.IsNil() {
+			break
+		}
+		if value.Type().Elem().Kind() != reflect.Struct {
+			break
+		}
+		value = value.Elem()
+		fallthrough
+
+	case reflect.Struct:
+		if anonymous {
+			sane = sanitizeStruct(sane, value)
+		} else if s := sanitizeStruct(nil, value); len(s) > 0 {
+			x = s
+		}
+	}
+
+	return
 }

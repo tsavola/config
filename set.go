@@ -221,18 +221,33 @@ func lookup(config interface{}, path string) (node reflect.Value) {
 	node = reflect.ValueOf(config)
 
 	for _, nodeName := range strings.Split(path, ".") {
+		if node.Kind() == reflect.Interface {
+			node = node.Elem()
+		}
 		if node.Kind() == reflect.Ptr {
 			node = node.Elem()
 		}
 
-		field, ok := node.Type().FieldByNameFunc(func(fieldName string) bool {
-			return strings.ToLower(fieldName) == nodeName
-		})
+		var ok bool
+
+		switch node.Kind() {
+		case reflect.Map:
+			node = node.MapIndex(reflect.ValueOf(nodeName))
+			ok = node != reflect.Value{}
+
+		case reflect.Struct:
+			field, found := node.Type().FieldByNameFunc(func(fieldName string) bool {
+				return strings.ToLower(fieldName) == nodeName
+			})
+			if found {
+				node = node.FieldByIndex(field.Index)
+				ok = true
+			}
+		}
+
 		if !ok {
 			panic(fmt.Errorf("unknown config key: %q", path))
 		}
-
-		node = node.FieldByIndex(field.Index)
 	}
 
 	return
